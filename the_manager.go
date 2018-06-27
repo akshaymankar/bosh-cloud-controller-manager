@@ -113,6 +113,9 @@ func BCCMFactory(config io.Reader) (cloudprovider.Interface, error) {
 
 	directorFactory := director.NewFactory(boshlog.NewLogger(boshlog.LevelDebug))
 	fc, err := director.NewConfigFromURL(cfg.Host)
+	fc.Client = cfg.Client
+	fc.ClientSecret = cfg.ClientSecret
+	fc.CACert = cfg.CACert
 	if err != nil {
 		glog.Fatalf("Coudn't read the config with error %s", err.Error())
 		os.Exit(1)

@@ -24,13 +24,15 @@ func (i *BoshInstances) NodeAddressesByProviderID(ctx context.Context, providerI
 
 	deps, err := i.Cloud.director.Deployments()
 	if err != nil {
-		return []v1.NodeAddress{}, nil
+		glog.Errorf("Could not get deployments! %s", err.Error())
+		return []v1.NodeAddress{}, err
 	}
 
 	dep := deps[0]
 	vms, err := dep.VMInfos()
 	if err != nil {
-		return []v1.NodeAddress{}, nil
+		glog.Error("Could not get VMInfo! %s", err.Error())
+		return []v1.NodeAddress{}, err
 	}
 
 	for _, vm := range vms {
@@ -38,6 +40,7 @@ func (i *BoshInstances) NodeAddressesByProviderID(ctx context.Context, providerI
 			glog.V(1).Infof("Found Instance: %s, ID: %s in Deployment: %s", instanceGroup, instanceUUID, dep.Name())
 		}
 	}
+	glog.Error("Setting address")
 
 	return []v1.NodeAddress{{Type: v1.NodeExternalDNS, Address: "some-address"}}, nil
 }
