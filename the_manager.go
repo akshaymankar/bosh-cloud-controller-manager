@@ -1,10 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
+	"github.com/cloudfoundry/bosh-cli/director"
+	boshuaa "github.com/cloudfoundry/bosh-cli/uaa"
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/golang/glog"
+	yaml "gopkg.in/yaml.v2"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -12,7 +18,15 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 )
 
+type BCCMConfig struct {
+	Host         string `yaml:"bosh-environment"`
+	CACert       string `yaml:"bosh-ca-cert"`
+	Client       string `yaml:"bosh-client"`
+	ClientSecret string `yaml:"bosh-client-secret"`
+}
+
 type BCCM struct {
+	director director.Director
 }
 
 func (b *BCCM) Initialize(clientBuilder controller.ControllerClientBuilder) {
@@ -56,7 +70,7 @@ func (b *BCCM) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
 }
 
 func (b *BCCM) Instances() (cloudprovider.Instances, bool) {
-	return &BoshInstances{}, false
+	return &BoshInstances{Cloud: b}, false
 }
 
 func (b *BCCM) Zones() (cloudprovider.Zones, bool) {
@@ -79,8 +93,46 @@ func (b *BCCM) HasClusterID() bool {
 	return true
 }
 
+func buildUAA(cfg BCCMConfig) (boshuaa.UAA, error) {
+	logger := boshlog.NewLogger(boshlog.LevelError)
+	factory := boshuaa.NewFactory(logger)
+	config, err := boshuaa.NewConfigFromURL(fmt.Sprintf("https://%s:8443", cfg.Host))
+	if err != nil {
+		return nil, err
+	}
+	config.Client = cfg.Client
+	config.ClientSecret = cfg.ClientSecret
+	config.CACert = cfg.CACert
+	return factory.New(config)
+}
+
 func BCCMFactory(config io.Reader) (cloudprovider.Interface, error) {
-	return &BCCM{}, nil
+	c, err := ioutil.ReadAll(config)
+	if err != nil {
+		glog.Fatalf("Coudn't read the config with error %s", err.Error())
+		os.Exit(1)
+	}
+	cfg := BCCMConfig{}
+	yaml.Unmarshal(c, &cfg)
+
+	directorFactory := director.NewFactory(boshlog.NewLogger(boshlog.LevelDebug))
+	uaa, err := buildUAA(cfg)
+	if err != nil {
+		glog.Fatalf("Coudn't create UAA client: %s", err.Error())
+		os.Exit(1)
+	}
+	factorConfig := director.FactoryConfig{
+		Host:         cfg.Host,
+		Port:         25555,
+		Client:       cfg.Client,
+		ClientSecret: cfg.ClientSecret,
+		CACert:       cfg.CACert,
+		TokenFunc:    boshuaa.NewClientTokenSession(uaa).TokenFunc,
+	}
+	directorFactory.New(factorConfig, nil, nil)
+
+	b := BCCM{}
+	return &b, nil
 }
 
 func init() {
