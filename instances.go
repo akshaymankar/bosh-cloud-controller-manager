@@ -18,7 +18,10 @@ func (i *BoshInstances) NodeAddresses(ctx context.Context, name types.NodeName) 
 }
 
 func (i *BoshInstances) NodeAddressesByProviderID(ctx context.Context, providerID string) ([]v1.NodeAddress, error) {
+	glog.V(1).Infof("Looking for Node Addresses")
 	instanceGroup, instanceUUID := parseProviderID(providerID)
+	glog.V(1).Infof("Looking for Instance: %s, ID: %s", instanceGroup, instanceUUID)
+
 	deps, err := i.Cloud.director.Deployments()
 	if err != nil {
 		return []v1.NodeAddress{}, nil
@@ -53,11 +56,11 @@ func (i *BoshInstances) InstanceID(ctx context.Context, nodeName types.NodeName)
 }
 
 func (i *BoshInstances) InstanceType(ctx context.Context, name types.NodeName) (string, error) {
-	return "", nil
+	return "lol instance type", nil
 }
 
 func (i *BoshInstances) InstanceTypeByProviderID(ctx context.Context, providerID string) (string, error) {
-	return "", nil
+	return "lol instance type", nil
 }
 
 func (i *BoshInstances) AddSSHKeyToAllInstances(ctx context.Context, user string, keyData []byte) error {
@@ -69,5 +72,6 @@ func (i *BoshInstances) CurrentNodeName(ctx context.Context, hostname string) (t
 }
 
 func (i *BoshInstances) InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error) {
-	return false, nil
+	glog.V(1).Info("Instance Exists Check")
+	return true, nil
 }

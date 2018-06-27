@@ -18,4 +18,6 @@
   name = "k8s.io/api"
   version = "kubernetes-1.10.5"
 
-
+[[override]]
+  name = "github.com/golang/glog"
+  revision = "65d674618f712aa808a7d0104131b9206fc3d5ad"

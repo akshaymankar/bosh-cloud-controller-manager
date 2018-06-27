@@ -71,6 +71,7 @@
   name = "github.com/cloudfoundry/bosh-cli"
   packages = [
     "director",
+    "uaa",
     "ui",
     "ui/fmt",
     "ui/table"
@@ -237,10 +238,9 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/glog"
   packages = ["."]
-  revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
+  revision = "65d674618f712aa808a7d0104131b9206fc3d5ad"
 
 [[projects]]
   branch = "master"
@@ -990,6 +990,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d054b3e40c2b51210ff1bd9da71e839f7424289ec20c5ddc5f5d5e38ba007452"
+  inputs-digest = "7ddc1bd2e12bbd0ec7831e997008f6f7bd7c1bcc45811f89bb17da60ab6468a7"
   solver-name = "gps-cdcl"
   solver-version = 1

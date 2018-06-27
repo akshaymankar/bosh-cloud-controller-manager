@@ -21,6 +21,8 @@ func main() {
 
 	command := app.NewCloudControllerManagerCommand()
 
+	goflag.CommandLine.Parse([]string{})
+
 	pflag.CommandLine.SetNormalizeFunc(utilflag.WordSepNormalizeFunc)
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 
